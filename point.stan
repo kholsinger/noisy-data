@@ -2,6 +2,7 @@ data {
   int<lower=0> N;
   vector[N] x;
   vector[N] y;
+  real sd_prior;
 }
 parameters {
   real mu_x;
@@ -14,8 +15,8 @@ transformed parameters {
   mu_diff <- mu_x - mu_y;
 }
 model {
-  mu_x ~ normal(0.0, 1.0);
-  mu_y ~ normal(0.0, 1.0);
+  mu_x ~ normal(0.0, sd_prior);
+  mu_y ~ normal(0.0, sd_prior);
   sigma_x ~ normal(0.0, 1.0);
   sigma_y ~ normal(0.0, 1.0);
   x ~ normal(mu_x, sigma_x);

@@ -8,21 +8,33 @@ options(mc.cores = parallel::detectCores())
 
 n_reps <- 1000
 
+## set to NA for default prior of means of N(0,1)
+## otherwise N(0, sd_prior_factor*mu)
+##
+sd_prior_factor <- 2.0
+
 stan.file.name <- "point.stan"
 stan.precompiled <- stan(stan.file.name, iter=1)
 
 progress_file <- "progress.txt"
 
-get_coverage_frequency <- function(mu, sigma, sample_size, n_reps) {
+get_coverage_frequency <- function(mu, sigma, sample_size, n_reps,
+                                   sd_prior_factor=NA) {
   cover <- 0
   sign <- 0
   x_bar <- numeric(0)
   for (i in 1:n_reps) {
     x <- rnorm(sample_size, mu, sigma)
     y <- rnorm(sample_size, 0.0, sigma)
+    if (!is.na(sd_prior_factor)) {
+      sd_prior <- sd_prior_factor*mu
+    } else {
+      sd_prior <- 1.0
+    }
     stan.data <- list(x=x,
                       y=y,
-                      N=sample_size)
+                      N=sample_size,
+                      sd_prior=sd_prior)
     stan.pars <- c("mu_x",
                    "mu_y",
                    "sigma_x",
@@ -70,7 +82,8 @@ for (mu in c(0.05, 0.10, 0.20)) {
     label <- sprintf("mu=%5.2f, n=%3d\n", mu, sample_size)
     cat(label)
     sink()
-    tmp <- get_coverage_frequency(mu, sigma=1.0, sample_size, n_reps)
+    tmp <- get_coverage_frequency(mu, sigma=1.0, sample_size, n_reps,
+                                  sd_prior_factor)
     cover <- c(cover, tmp$cover)
     sign <- c(sign, tmp$sign)
     label <- sprintf("mu=%4.2f", mu)
