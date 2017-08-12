@@ -2,7 +2,8 @@ library(ggplot2)
 
 rm(list=ls())
 
-n_reps <- 1000
+n_reps <- 10000
+threshold <- 0.005
 
 generate_p_values <- function(mu, sigma, sample_size, n_reps) {
   p_value <- numeric(n_reps)
@@ -43,7 +44,7 @@ for.plot <- data.frame(p_value=p_value,
                        mean=mean,
                        n=n)
 for.plot$n <- factor(for.plot$n, levels=c("n=10", "n=50", "n=100"))
-for.plot <- subset(for.plot, p_value < 0.05)
+for.plot <- subset(for.plot, p_value < threshold)
 p <- ggplot(for.plot, aes(x=x_bar)) +
   geom_histogram(bins=50) +
   xlab("Sample mean") +
